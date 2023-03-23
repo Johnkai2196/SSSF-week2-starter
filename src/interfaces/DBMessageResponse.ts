@@ -3,5 +3,5 @@ import {UserOutput} from './User';
 
 export default interface DBMessageResponse {
   message: string;
-  data: UserOutput | Cat;
+  data: UserOutput | Cat | Cat[];
 }

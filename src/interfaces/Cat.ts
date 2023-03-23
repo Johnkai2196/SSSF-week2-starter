@@ -7,7 +7,17 @@ interface Cat extends Document {
   cat_name: string;
   owner: User | string;
   weight: number;
+  filename: string;
   birthdate: Date;
-  cords: Point;
+  location: Point;
 }
-export {Cat};
+interface CatTest {
+  _id?: string;
+  cat_name?: string;
+  owner?: User | string;
+  filename?: string;
+  weight?: number;
+  birthdate?: Date;
+  location?: Point;
+}
+export {Cat, CatTest};
