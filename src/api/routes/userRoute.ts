@@ -8,6 +8,7 @@ import {
   userPutCurrent,
 } from '../controllers/userController';
 import passport from '../../passport';
+import {body} from 'express-validator';
 
 const router = express.Router();
 
@@ -16,7 +17,12 @@ const router = express.Router();
 router
   .route('/')
   .get(userListGet)
-  .post(userPost)
+  .post(
+    body('user_name').notEmpty().isString().escape(),
+    body('email').notEmpty().isString().escape(),
+    body('password').notEmpty().isString().escape(),
+    userPost
+  )
   .put(passport.authenticate('jwt', {session: false}), userPutCurrent)
   .delete(passport.authenticate('jwt', {session: false}), userDeleteCurrent);
 

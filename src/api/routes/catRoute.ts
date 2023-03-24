@@ -39,6 +39,9 @@ router
     upload.single('cat'),
     makeThumbnail,
     getCoordinates,
+    body('cat_name').notEmpty().isString().escape(),
+    body('weight').notEmpty().isNumeric().escape(),
+    body('birthdate').notEmpty().isDate().escape(),
     catPost
   );
 
