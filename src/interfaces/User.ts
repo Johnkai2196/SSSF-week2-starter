@@ -17,5 +17,12 @@ interface LoginUser {
   user_name: string;
   password: string;
 }
+interface UserTest {
+  _id?: string;
+  user_name?: string;
+  email?: string;
+  password?: string;
+  role?: 'user' | 'admin';
+}
 
-export {User, UserOutput, LoginUser};
+export {User, UserOutput, LoginUser, UserTest};
