@@ -1,11 +1,11 @@
 import {Point} from 'geojson';
-import {Document} from 'mongoose';
+import {Document, Types} from 'mongoose';
 import {User} from './User';
 
 // TODO: cat interface
 interface Cat extends Document {
   cat_name: string;
-  owner: User | string;
+  owner: Types.ObjectId | User;
   weight: number;
   filename: string;
   birthdate: Date;
@@ -14,7 +14,7 @@ interface Cat extends Document {
 interface CatTest {
   _id?: string;
   cat_name?: string;
-  owner?: User | string;
+  owner?: Types.ObjectId | User;
   filename?: string;
   weight?: number;
   birthdate?: Date;

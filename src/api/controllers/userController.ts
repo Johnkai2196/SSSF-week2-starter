@@ -25,7 +25,9 @@ const userGet = async (req: Request, res: Response, next: NextFunction) => {
         .join(', ');
       throw new CustomError(messages, 400);
     }
-    const user = await userModel.findById(req.params.id);
+    const user = await userModel
+      .findById(req.params.id)
+      .select('-password -role ');
     if (!user) {
       next(new CustomError('No user found', 404));
       return;
@@ -38,7 +40,7 @@ const userGet = async (req: Request, res: Response, next: NextFunction) => {
 
 const userListGet = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const users = await userModel.find().select('-__v');
+    const users = await userModel.find().select('-password -role ');
     if (!users) {
       next(new CustomError('No users found', 404));
       return;
@@ -65,9 +67,14 @@ const userPost = async (
     const user = req.body;
     user.password = bcrypt.hashSync(user.password, salt);
     const userPost = await userModel.create(req.body);
+
     const output: DBMessageResponse = {
       message: 'User created',
-      data: userPost,
+      data: {
+        _id: userPost._id,
+        user_name: userPost.user_name,
+        email: userPost.email,
+      },
     };
     res.json(output);
   } catch (err) {
@@ -76,7 +83,7 @@ const userPost = async (
 };
 
 const userPutCurrent = async (
-  req: Request<{id: string}, {}, User>,
+  req: Request<{}, {}, User>,
   res: Response,
   next: NextFunction
 ) => {
@@ -90,8 +97,13 @@ const userPutCurrent = async (
       throw new CustomError(messages, 400);
     }
     const user = req.body;
-    user.password = bcrypt.hashSync(user.password, salt);
-    const userPut = await userModel.findByIdAndUpdate(req.params.id, user);
+    console.log(req.body, req.user);
+    if (user.password) {
+      user.password = bcrypt.hashSync(user.password, salt);
+    }
+    const userPut = await userModel
+      .findByIdAndUpdate((req.user as User)._id, user, {new: true})
+      .select('-password -role ');
     if (!userPut) {
       next(new CustomError('No user found', 404));
       return;
@@ -119,7 +131,9 @@ const userDeleteCurrent = async (
         .join(', ');
       throw new CustomError(messages, 400);
     }
-    const userDelete = await userModel.findByIdAndDelete(req.params.id);
+    const userDelete = await userModel
+      .findByIdAndDelete((req.user as User)._id)
+      .select('-password -role ');
     if (!userDelete) {
       next(new CustomError('No user found', 404));
       return;
@@ -147,7 +161,12 @@ const checkToken = async (
         .join(', ');
       throw new CustomError(messages, 400);
     }
-    res.json(req.user);
+
+    res.json({
+      _id: (req.user as User)._id,
+      user_name: (req.user as User).user_name,
+      email: (req.user as User).email,
+    });
   } catch (err) {
     next(new CustomError((err as Error).message, 500));
   }

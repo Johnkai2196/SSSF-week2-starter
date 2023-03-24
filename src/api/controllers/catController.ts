@@ -19,11 +19,13 @@ import {User} from '../../interfaces/User';
 
 const catListGet = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const cats = await catModel.find().select('-__v');
+    const cats = await catModel.find().populate('owner', 'user_name email');
     if (!cats) {
+      console.log(cats);
       next(new CustomError('No cats found', 404));
       return;
     }
+    console.log(cats);
     res.json(cats);
   } catch (err) {
     next(new CustomError((err as Error).message, 500));
@@ -42,7 +44,7 @@ const catGet = async (req: Request, res: Response, next: NextFunction) => {
     }
     const cat = await catModel
       .findById(req.params.id)
-      .populate('owner', 'user_name', 'email');
+      .populate('owner', 'user_name email');
     if (!cat) {
       next(new CustomError('No cat found', 404));
       return;
@@ -59,6 +61,8 @@ const catPost = async (
 ) => {
   try {
     const errors = validationResult(req);
+    console.log(req.body);
+
     if (!errors.isEmpty()) {
       const messages = errors
         .array()
@@ -66,7 +70,12 @@ const catPost = async (
         .join(', ');
       throw new CustomError(messages, 400);
     }
+
+    req.body.filename = <string>req.file?.filename;
+    req.body.location = res.locals.coords;
+    req.body.owner = (req.user as User)._id;
     const cat = await catModel.create(req.body);
+    console.log(cat);
     const output: DBMessageResponse = {
       message: 'Cat created',
       data: cat,
@@ -119,9 +128,7 @@ const catDelete = async (req: Request, res: Response, next: NextFunction) => {
         .join(', ');
       throw new CustomError(messages, 400);
     }
-    const cat = await catModel
-      .findByIdAndDelete(req.params.id)
-      .populate('owner');
+    const cat = await catModel.findByIdAndDelete(req.params.id);
     if (!cat) {
       next(new CustomError('No cat found', 404));
       return;
@@ -151,8 +158,8 @@ const catGetByUser = async (
       throw new CustomError(messages, 400);
     }
     const cats = await catModel
-      .find({owner: req.params.id})
-      .populate('owner', 'user_name', 'email');
+      .find({owner: (req.user as User)._id})
+      .populate('owner', 'user_name email');
     if (!cats) {
       next(new CustomError('No cats found', 404));
       return;

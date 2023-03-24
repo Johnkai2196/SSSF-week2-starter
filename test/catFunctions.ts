@@ -1,7 +1,7 @@
 /* eslint-disable node/no-unpublished-import */
 import request from 'supertest';
 import expect from 'expect';
-import {Cat, CatTest} from '../src/interfaces/Cat';
+import {Cat} from '../src/interfaces/Cat';
 import DBMessageResponse from '../src/interfaces/DBMessageResponse';
 import {Types} from 'mongoose';
 
@@ -13,7 +13,7 @@ const getCat = (url: string | Function): Promise<Cat[]> => {
         if (err) {
           reject(err);
         } else {
-          const cats: CatTest[] = response.body;
+          const cats: Cat[] = response.body;
           cats.forEach((cat) => {
             expect(cat).toHaveProperty('_id');
             expect(cat).toHaveProperty('cat_name');
@@ -68,7 +68,7 @@ const postCat = (
           reject(err);
         } else {
           const cat: DBMessageResponse = response.body;
-          expect(cat.data._id).not.toBe('');
+          expect((cat.data as Cat)._id).not.toBe('');
           expect(cat.message).not.toBe('');
           resolve(response.body);
         }
