@@ -100,12 +100,16 @@ const catPut = async (
       throw new CustomError(messages, 400);
     }
     const cat = await catModel
-      .findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-      })
+      .findOneAndUpdate(
+        {_id: req.params.id, owner: (req.user as User)._id},
+        req.body,
+        {
+          new: true,
+        }
+      )
       .select('-__v');
     if (!cat) {
-      next(new CustomError('No cat found', 404));
+      next(new CustomError('Cat not found or ownership not confirmed', 404));
       return;
     }
     const output: DBMessageResponse = {
@@ -128,9 +132,13 @@ const catDelete = async (req: Request, res: Response, next: NextFunction) => {
         .join(', ');
       throw new CustomError(messages, 400);
     }
-    const cat = await catModel.findByIdAndDelete(req.params.id);
+
+    const cat = await catModel.findOneAndRemove({
+      _id: req.params.id,
+      owner: (req.user as User)._id,
+    });
     if (!cat) {
-      next(new CustomError('No cat found', 404));
+      next(new CustomError('Cat not found or ownership not confirmed', 404));
       return;
     }
     const output: DBMessageResponse = {
@@ -256,6 +264,8 @@ const catDeleteAdmin = async (
       throw new CustomError(messages, 400);
     }
     const user = req.user as User;
+    console.log(user);
+
     if (user.role !== 'admin') {
       throw new CustomError('Not authorized', 401);
     }
