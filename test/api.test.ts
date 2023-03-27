@@ -102,7 +102,7 @@ describe('GET /api/v1', () => {
   // test cat upload with GPS
   let catID2: string;
   it('should upload a cat with GPS', async () => {
-    const message = await postCat(app, token, 'picWithGPS.JPG');
+    const message = await postCat(app, token, 'picWithGPS.jpg');
     catID2 = message.data._id;
   });
 
